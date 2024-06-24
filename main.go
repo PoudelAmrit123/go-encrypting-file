@@ -8,6 +8,7 @@ import (
 	"github.com/PoudelAmrit123/goFleEncryption/filecrypt"
 	"github.com/gohugoio/hugo/common/terminal"
 	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 )
 
 func main() {
@@ -62,21 +63,33 @@ func encryptHandle() {
 	}
 	password := getPassword()
 	fmt.Println("\n Encrypting.....")
-	filecrypt.Encryption(file, password)
+	filecrypt.Encrypt(file, password)
 	fmt.Println("\n File successfully Protected")
 
 }
 
 func decryptHandle() {
-
-}
-
-func getPassword() {
+	if len(os.Args) < 3 {
+		println("missing the path to the file . for more info , run  go run . help  ")
+	}
+	file := os.Args[2]
+	if !validateFile(file) {
+		panic("File not found")
+	}
 	fmt.Println("Enter the password")
 
-	password := terminal.ReadPassword(0)
+	password, _ := term.ReadPassword(0)
+	fmt.Println("\n Dcrypting.....")
+	filecrypt.Decrypt(file, password)
+	fmt.Println("\n File successfully Decrypted")
+}
+
+func getPassword() []byte {
+	fmt.Println("Enter the password")
+
+	password, _ := term.ReadPassword(0)
 	fmt.Println("Confirm password")
-	passwordConfirm := terminal.ReadPassword(0)
+	passwordConfirm, _ := term.ReadPassword(0)
 	if !validatePassword(password, passwordConfirm) {
 		fmt.Println("\nPassword do not match. Please try again \n")
 		return getPassword()
