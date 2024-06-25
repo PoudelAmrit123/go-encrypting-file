@@ -6,16 +6,17 @@ import (
 	"os"
 
 	"github.com/PoudelAmrit123/goFleEncryption/filecrypt"
-	// "github.com/gohugoio/hugo/common/terminal"
-	// "golang.org/x/crypto/ssh/terminal"
+	// "github.com/gohugoio/hugo/common/term"
+	// "golang.org/x/crypto/ssh/term"
 	"golang.org/x/term"
 )
 
 func main() {
-	fmt.Println("Hello Golang!")
 
+	// If not enough args, return help text
 	if len(os.Args) < 2 {
 		printHelp()
+		os.Exit(0)
 	}
 
 	function := os.Args[1]
@@ -28,88 +29,92 @@ func main() {
 	case "decrypt":
 		decryptHandle()
 	default:
-		fmt.Println("Run encrypt to encrypt a file , and decrypt to decrypt the file ")
+		fmt.Println("Run CryptoGo encrypt to encrypt a file, and CryptoGo decrypt to decrypt a file.")
 		os.Exit(1)
-
 	}
+
 }
 
 func printHelp() {
-
-	fmt.Println("File encryption")
-	fmt.Println("Simple file encryptor for your day-to-day needs.")
+	fmt.Println("CryptoGo")
+	fmt.Println("Simple file encrypter for your day-to-day needs.")
 	fmt.Println("")
 	fmt.Println("Usage:")
 	fmt.Println("")
-	fmt.Println("\tgo run . encrypt /path/to/your/file")
+	fmt.Println("\tCryptoGo encrypt /path/to/your/file")
 	fmt.Println("")
 	fmt.Println("Commands:")
-	fmt.Println("\t encrypt \t Encrypt a file given a password")
-	fmt.Println("\t decrypt \t Tries to decrypt a file using a password")
-	fmt.Println("\t help \t\t Display help text")
 	fmt.Println("")
-
+	fmt.Println("\t encrypt\tEncrypts a file given a password")
+	fmt.Println("\t decrypt\tTries to decrypt a file using a password")
+	fmt.Println("\t help\t\tDisplays help text")
+	fmt.Println("")
 }
 
 func encryptHandle() {
-	//if the user pass go run . encrypt
-	// that means the length is less than 3
+
 	if len(os.Args) < 3 {
-		println("missing the path to the file . for more info , run  go run . help  ")
+		println("Missing the path to the file. For more information run CryptoGo help")
+		os.Exit(0)
 	}
+
 	file := os.Args[2]
+
 	if !validateFile(file) {
 		panic("File not found")
 	}
+
 	password := getPassword()
-	fmt.Println("\n Encrypting.....")
+
+	fmt.Println("\nEncrypting...")
 	filecrypt.Encrypt(file, password)
-	fmt.Println("\n File successfully Protected")
+	fmt.Println("\nFile successfully protected")
 
-}
-
-func decryptHandle() {
-	if len(os.Args) < 3 {
-		println("missing the path to the file . for more info , run  go run . help  ")
-	}
-	file := os.Args[2]
-	if !validateFile(file) {
-		panic("File not found")
-	}
-	fmt.Println("Enter the password")
-
-	password, _ := term.ReadPassword(0)
-	fmt.Println("\n Dcrypting.....")
-	filecrypt.Decrypt(file, password)
-	fmt.Println("\n File successfully Decrypted")
 }
 
 func getPassword() []byte {
-	fmt.Println("Enter the password")
-
+	fmt.Print("Enter password: ")
 	password, _ := term.ReadPassword(0)
-	fmt.Println("Confirm password")
-	passwordConfirm, _ := term.ReadPassword(0)
-	if !validatePassword(password, passwordConfirm) {
-		fmt.Println("\nPassword do not match. Please try again \n")
+	fmt.Print("\nConfirm password: ")
+	password2, _ := term.ReadPassword(0)
+	if !validatePassword(password, password2) {
+		fmt.Print("\nPasswords do not match. Please try again.\n")
 		return getPassword()
 	}
 	return password
+}
+
+func decryptHandle() {
+
+	if len(os.Args) < 3 {
+		println("Missing the path to the file. For more information run CryptoGo help")
+		os.Exit(0)
+	}
+
+	file := os.Args[2]
+
+	if !validateFile(file) {
+		panic("File not found")
+	}
+
+	fmt.Print("Enter password: ")
+	password, _ := term.ReadPassword(0)
+
+	fmt.Println("\nDecrypting...")
+	filecrypt.Decrypt(file, password)
+	fmt.Println("\nFile successfully decrypted.")
 
 }
 
-func validatePassword(password []byte, password2 []byte) bool {
+func validatePassword(password1 []byte, password2 []byte) bool {
+	return bytes.Equal(password1, password2)
 
-	if !bytes.Equal(password, password2) {
-		return false
-	}
-	return true
 }
 
 func validateFile(file string) bool {
 	if _, err := os.Stat(file); os.IsNotExist(err) {
 		return false
 	}
-	return true
 
+	return true
 }
