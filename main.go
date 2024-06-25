@@ -6,8 +6,8 @@ import (
 	"os"
 
 	"github.com/PoudelAmrit123/goFleEncryption/filecrypt"
-	"github.com/gohugoio/hugo/common/terminal"
-	"golang.org/x/crypto/ssh/terminal"
+	// "github.com/gohugoio/hugo/common/terminal"
+	// "golang.org/x/crypto/ssh/terminal"
 	"golang.org/x/term"
 )
 

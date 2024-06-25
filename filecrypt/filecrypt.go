@@ -5,6 +5,7 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"crypto/sha1"
+	"encoding/hex"
 	"io"
 	"os"
 
@@ -53,6 +54,7 @@ func Encrypt(source string, password []byte) {
 
 	dstFile, err := os.Create(source)
 	Errors(err)
+	defer dstFile.Close()
 
 	_, err = dstFile.Write(cipherText)
 	Errors(err)
@@ -65,5 +67,55 @@ func Errors(err error) error {
 }
 
 func Decrypt(source string, password []byte) {
+
+	if _, err := os.Stat(source); os.IsNotExist(err) {
+		panic(err.Error())
+	}
+	srcFile, err := os.Open(source)
+	Errors(err)
+	defer srcFile.Close()
+	//reading the source file
+	cipherText, err := io.ReadAll(srcFile)
+	Errors(err)
+
+	key := password
+	//finding out the nounce that is appended in the encryption
+
+	salt := cipherText[len(cipherText)-12:]
+
+	str := hex.EncodeToString(salt)
+	nonce, err := hex.DecodeString(str)
+	if err != nil {
+		panic(err.Error())
+
+	}
+	dk := pbkdf2.Key(key, nonce, 4096, 32, sha1.New)
+	cipherblock, err := aes.NewCipher(dk)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	aesgcm, err := cipher.NewGCM(cipherblock)
+	if err != nil {
+		panic(err.Error())
+	}
+	plainText, err := aesgcm.Open(key, nonce, cipherText[:len(cipherText)-12], nil)
+	if err != nil {
+		panic(err.Error())
+
+	}
+
+	dstFile, err := os.Create(source)
+	if err != nil {
+		panic(err.Error())
+
+	}
+	_, err = dstFile.Write(plainText)
+	if err != nil {
+		panic(err.Error())
+
+	}
+
+	defer dstFile.Close()
 
 }
